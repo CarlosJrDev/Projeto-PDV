@@ -35,7 +35,7 @@
                                 Iniciar Preparo
                             </a>
                         {% elif pedido.status == "EP" %}
-                            <a href="{% url 'atualizar_status' pedido.id 'PR' %}" class="btn btn-success">
+                            <a href="{% url 'atualizar_status' pedido.id 'PE' %}" class="btn btn-success">
                                 Marcar como Pronto
                             </a>
                         {% endif %}
