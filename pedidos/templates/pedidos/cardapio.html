@@ -1,0 +1,104 @@
+<!-- templates/pedidos/cardapio.html -->
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cardápio - Mesa {{ mesa.numero }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+    <link rel="stylesheet" href="{% static 'pedidos/css/estilo_cardapio.css' %}">
+    
+    <!-- Variável global para mesaId -->
+    <script>
+        const mesaIdGlobal = "{{ mesa.id }}";
+    </script>
+    
+    <!-- Script JS do cardápio -->
+    <script src="{% static 'pedidos/js/cardapio.js' %}" defer></script>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-light justify-content-end px-4">
+        <a href="{% url 'ver_carrinho' mesa.id %}" class="btn position-relative">
+            <i class="bi bi-cart-fill fs-4"></i>
+            <span id="contador-carrinho" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ total_itens }}
+            </span>
+        </a>
+    </nav>
+
+    <div class="container py-4">
+        <div class="text-center mb-4">
+            <h2>Bem-vindo! Mesa {{ mesa.numero }}</h2>
+            <p class="text-muted">Escolha seus produtos abaixo</p>
+        </div>
+
+        <div class="row" id="lista-produtos">
+            {% for produto in produtos %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if produto.imagem %}
+                        <img src="{{ produto.imagem.url }}" class="card-img-top" alt="{{ produto.nome }}">
+                    {% else %}
+                        <img src="{% static 'pedidos/img/default.jpg' %}" class="card-img-top" alt="Sem imagem">
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ produto.nome }}</h5>
+                        <p class="card-text text-muted">R$ {{ produto.preco }}</p>
+                        <button 
+                            class="btn btn-success mt-auto adicionar-carrinho" 
+                            data-produto-id="{{ produto.id }}"
+                            data-mesa-id="{{ mesa.id }}">
+                            Adicionar ao Carrinho
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        <div id="toast-msg" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">Produto adicionado com sucesso!</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+            </div>
+        </div>
+    </div> 
+<!-- Modal -->
+<div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" action="{% url 'salvar_cliente_mesa' %}" class="modal-content" id="formCliente">
+            {% csrf_token %}
+            <div class="modal-header">
+                <h5 class="modal-title" id="clienteModalLabel">Identifique-se</h5>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome</label>
+                    <input type="text" name="nome" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="telefone" class="form-label">Telefone</label>
+                    <input type="text" name="telefone" class="form-control" required>
+                </div>
+                <input type="hidden" name="mesa_id" value="{{ mesa.id }}">
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnContinuar" class="btn btn-success">Continuar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+  
+</body>
+</html>

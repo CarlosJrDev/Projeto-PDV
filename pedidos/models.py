@@ -1,5 +1,16 @@
 from django.db import models
+from restaurantes.models import Mesa
 from django.utils.translation import gettext_lazy as _
+
+
+
+
+
+class ClienteMesa(models.Model):
+    nome = models.CharField(max_length=100)
+    telefone = models.CharField(max_length=20)
+    mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
+    criado_em = models.DateTimeField(auto_now_add=True)
 
 
 class Pedido(models.Model):
@@ -16,6 +27,7 @@ class Pedido(models.Model):
         choices=Status.choices,
         default=Status.AGUARDANDO   
     )
+    cliente = models.ForeignKey(ClienteMesa, on_delete=models.SET_NULL, null=True, blank=True)  # <-- aqui
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def total(self):
@@ -44,7 +56,7 @@ class ItemPedido(models.Model):
 
 
 class Carrinho(models.Model):
-    mesa = models.ForeignKey("restaurantes.Mesa", on_delete=models.CASCADE)
+    mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def total(self):
@@ -55,12 +67,16 @@ class Carrinho(models.Model):
 
 
 class ItemCarrinho(models.Model):
-    carrinho = models.ForeignKey(Carrinho, on_delete=models.CASCADE, related_name="itens")
-    produto = models.ForeignKey("restaurantes.Produto", on_delete=models.CASCADE)
+    carrinho = models.ForeignKey('Carrinho', related_name='itens', on_delete=models.CASCADE)
+    produto = models.ForeignKey('restaurantes.Produto', on_delete=models.CASCADE)  # ajuste aqui
     quantidade = models.PositiveIntegerField(default=1)
-
-    def __str__(self):
-        return f"{self.quantidade}x {self.produto.nome} - Carrinho {self.carrinho.id}"
 
     def subtotal(self):
         return self.quantidade * self.produto.preco
+
+    def __str__(self):
+        return f"{self.quantidade}x {self.produto.nome}"
+    
+
+
+

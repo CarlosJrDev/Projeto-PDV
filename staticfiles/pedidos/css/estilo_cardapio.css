@@ -1,0 +1,30 @@
+/* static/cardapio/css/estilo_cardapio.css */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.card-img-top {
+    height: 160px;
+    object-fit: cover;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.btn-success {
+    background-color: #28a745;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  
+  .animate-pulse {
+    animation: pulse 0.3s ease;
+  }
+  

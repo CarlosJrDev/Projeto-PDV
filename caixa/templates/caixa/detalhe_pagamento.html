@@ -14,6 +14,11 @@
                 valorInput.style.display = "none";
             }
         }
+
+        // Executar assim que a página carregar
+        window.addEventListener('DOMContentLoaded', function () {
+            toggleValorRecebido();
+        });
     </script>
 </head>
 <body class="container mt-5">
@@ -21,7 +26,15 @@
     <p><strong>Mesa:</strong> {{ pedido.mesa.numero }}</p>
     <p><strong>Total:</strong> R$ {{ valor_total }}</p>
 
-    <form method="post">
+    {% if messages %}
+        <div class="alert alert-info">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'detalhe_pagamento' pedido.id %}">
         {% csrf_token %}
         <div class="mb-3">
             <label for="metodo_pagamento" class="form-label">Método de Pagamento</label>

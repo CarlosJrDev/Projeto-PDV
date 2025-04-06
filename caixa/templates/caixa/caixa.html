@@ -18,11 +18,10 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        /* Cores dos status */
-        .status-sem-pedido    { background-color: #198754; color: #fff; } /* Verde */
-        .status-aguardando    { background-color: #0d6efd; color: #fff; } /* Azul */
-        .status-em-preparo    { background-color: #fd7e14; color: #fff; } /* Laranja escuro */
-        .status-pronto        { background-color: #6c757d; color: #fff; } /* Cinza */
+        .status-sem-pedido    { background-color: #198754; color: #fff; }
+        .status-aguardando    { background-color: #0d6efd; color: #fff; }
+        .status-em-preparo    { background-color: #fd7e14; color: #fff; }
+        .status-pronto        { background-color: #6c757d; color: #fff; }
     </style>
 </head>
 <body class="container mt-5">
@@ -31,14 +30,14 @@
     <div class="row">
         {% for mesa in mesas %}
             <div class="col-md-3 col-sm-6 mb-3">
-                <a href="{% if mesa.pedido and mesa.pedido.status != 'FI' %}
-                            {% if mesa.pedido.status == 'PE' %} 
-                                {% url 'registrar_pagamento' mesa.pedido.id %}
-                            {% else %} 
-                                {% url 'detalhe_pedido' mesa.pedido.id %}
-                            {% endif %}
-                        {% else %}#{% endif %}" class="text-decoration-none">
-                    <div class="card text-center p-3 mesa-card shadow-sm 
+                <a id="mesa-link-{{ mesa.numero }}" href="{% if mesa.pedido and mesa.pedido.status != 'FI' %}
+                        {% if mesa.pedido.status == 'PE' %}
+                            {% url 'detalhe_pagamento' mesa.pedido.id %}
+                        {% else %}
+                            {% url 'detalhe_pedido' mesa.pedido.id %}
+                        {% endif %}
+                    {% else %}javascript:void(0);{% endif %}" class="text-decoration-none">
+                    <div class="card text-center p-3 mesa-card shadow-sm
                         {% if mesa.pedido and mesa.pedido.status != 'FI' %}
                             {% if mesa.pedido.status == 'AG' %}status-aguardando
                             {% elif mesa.pedido.status == 'EP' %}status-em-preparo
@@ -60,5 +59,53 @@
             </div>
         {% endfor %}
     </div>
+
+    <script>
+        const socket = new WebSocket("ws://" + window.location.host + "/ws/caixa/");
+
+        socket.onopen = function () {
+            console.log("🧾 WebSocket do CAIXA conectado!");
+        };
+
+        socket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            console.log("📦 Pedido atualizado no caixa:", data);
+
+            const todasMesas = document.querySelectorAll(".mesa-card");
+
+            todasMesas.forEach(card => {
+                const titulo = card.querySelector("h4");
+                if (titulo && titulo.textContent.includes(`Mesa ${data.mesa}`)) {
+                    // Atualizar conteúdo do card
+                    const p = card.querySelector("p");
+                    if (p) {
+                        p.innerHTML = `
+                            <span class="badge bg-dark">Pedido #${data.id}</span><br>
+                            Status: <strong>${data.status_display || data.status}</strong>
+                        `;
+                    }
+
+                    // Atualizar classe de cor
+                    card.classList.remove("status-sem-pedido", "status-aguardando", "status-em-preparo", "status-pronto");
+
+                    if (data.status === "AG") card.classList.add("status-aguardando");
+                    else if (data.status === "EP") card.classList.add("status-em-preparo");
+                    else if (data.status === "PE") card.classList.add("status-pronto");
+                    else card.classList.add("status-sem-pedido");
+
+                    // Atualizar link dinamicamente
+                    const numeroMesa = data.mesa;
+                    const link = document.querySelector(`#mesa-link-${numeroMesa}`);
+                    if (link) {
+                        if (data.status === "PE") {
+                            link.href = `detalhe_pagamento/${data.id}/`;
+                        } else {
+                            link.href = `pedido/${data.id}/`;
+                        }
+                    }
+                }
+            });
+        };
+    </script>
 </body>
 </html>
